@@ -16,7 +16,7 @@ export function Pagination({ pageNo, dataSize }: PaginationProps) {
 
   // parse page param, default to 1, clamp to [1, totalPages]
 
-  const currentPage = Math.min(Math.max(pageNo, 1), totalPages);
+  let currentPage = Math.min(Math.max(pageNo, 1), totalPages);
 
   // helper to update page while preserving other query params
   const setPage = (nextPageOrUpdater: number | ((prev: number) => number)) => {
@@ -25,7 +25,7 @@ export function Pagination({ pageNo, dataSize }: PaginationProps) {
       : nextPageOrUpdater;
 
     const page = Math.min(Math.max(Math.floor(nextPage), 1), totalPages);
-
+    currentPage = page;
     // build new search params from existing ones
     const newParams = new URLSearchParams(Array.from(params.entries()));
     if (page === 1) {

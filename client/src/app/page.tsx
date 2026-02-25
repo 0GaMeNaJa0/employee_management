@@ -207,8 +207,7 @@ export default function UserTable() {
         </div>
 
         {/* Pagination */}
-        <Pagination dataSize={filtered.length}
-      />
+        <Pagination dataSize={filtered.length} pageNo={pageFromUrl}/>
       </div>
 
       {/* Modals */}
