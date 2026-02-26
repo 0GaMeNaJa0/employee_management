@@ -17,7 +17,7 @@ export const INITIAL_USERS: User[] = [
 
 export const ROLES: Role[]     = ["Admin", "Developer", "Designer", "Manager", "Analyst"];
 export const STATUSES: Status[] = ["Active", "Idle", "Inactive"];
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 6;
 
 export const statusConfig: Record<Status, { dot: string; badge: string }> = {
   Active:   { dot: "bg-emerald-400", badge: "bg-emerald-400/10 text-emerald-400 ring-emerald-400/30" },

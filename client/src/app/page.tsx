@@ -8,8 +8,8 @@ import { UserForm } from "@/features/users/components/UserForm";
 import { Modal } from "@/features/users/components/Modal";
 import { Pagination } from "@/components/templates/Pagination";
 import { useSearchParams } from "next/navigation";
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// Helpers
 const getInitials = (name: string): string =>
   name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
@@ -23,9 +23,8 @@ const getColor = (name: string): string => {
   return palette[Math.abs(h) % palette.length];
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function UserTable() {
+export default function Home() {
   const params = useSearchParams();
   const rawPage = params.get("page");
   const parsed = Number(rawPage);
