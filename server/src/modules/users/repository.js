@@ -1,13 +1,15 @@
 const db = require('../../config/db');
+const User = require('./model');
 
 async function queryUsers() {
-  const sqlSelect = "select u.UserId, u.Email,u.`Name`, r.RoleId as 'RoleId',r.Name as 'RoleName',s.StatusId as 'StatusId', s.Name as 'StatusName'";
-  const sqlFromWhere = "from Users u "
-  + "left join Roles r on u.RoleId = r.RoleId " 
-  + "left join Statuses s on u.StatusId = s.StatusId ";
+  const sql =
+    "SELECT u.UserId, u.Email, u.`Name`, r.RoleId AS RoleId, r.Name AS RoleName, " +
+    "s.StatusId AS StatusId, s.Name AS StatusName " +
+    "FROM Users u " +
+    "LEFT JOIN Roles r ON u.RoleId = r.RoleId " +
+    "LEFT JOIN Statuses s ON u.StatusId = s.StatusId";
 
-  const sqlText = sqlSelect + sqlFromWhere;
-  const [rows] = await db.query(sqlText);
+  const [rows] = await db.query(sql);
   return rows;
 }
 
