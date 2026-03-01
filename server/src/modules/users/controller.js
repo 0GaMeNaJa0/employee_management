@@ -6,6 +6,20 @@ async function getUsers(req, res, next) {
     res.json(users);
   } catch (err) { next(err); }
 }
+async function getUser(req, res, next) {
+  try {
+    const userId = req.params.userId;
+    const users = await service.getUser(userId);
+    res.json(users);
+  } catch (err) { next(err); }
+}
+async function getUserByEmail(req, res, next) {
+  try {
+    const email = req.body.email;
+    const users = await service.getUserByEmail(email);
+    res.json(users);
+  } catch (err) { next(err); }
+}
 async function createUser(req, res, next) {
   try {
     const userData = req.body;
@@ -23,7 +37,6 @@ async function createUser(req, res, next) {
 async function editUser(req, res, next) {
   try {
     const userData = req.body;
-    userData.userId = req.params.id; // ensure id comes from URL
 
     const result = await service.editUser(userData);
 
@@ -35,7 +48,7 @@ async function editUser(req, res, next) {
 }
 async function deleteUser(req, res, next) {
   try {
-    const userId = req.params.id;
+    const userId = req.body.userId;
     const result = await service.deleteUser(userId);
     if (result && result.affectedRows > 0) {
       return res.status(200).send("User deleted");
@@ -46,7 +59,9 @@ async function deleteUser(req, res, next) {
 
 module.exports = {
   getUsers,
+  getUser,
   createUser,
   editUser,
-  deleteUser
+  deleteUser,
+  getUserByEmail
 };
