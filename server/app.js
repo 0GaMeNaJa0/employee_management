@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const port = process.env.WEB_PORT || 3000;
 const usersRouter = require('./src/modules/users/route');
+const rolesRouter = require('./src/modules/roles/route');
+const statusesRouter = require('./src/modules/statuses/route');
 const authRouter = require('./src/modules/auth/route');
 const authenticate = require('./src/middleware/middleware')
 
@@ -18,6 +20,8 @@ app.use(cors({
 
 app.use('/auth', authRouter);
 app.use('/users', authenticate , usersRouter);
+app.use('/roles', authenticate , rolesRouter);
+app.use('/statuses', authenticate , statusesRouter);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Not Found' });
