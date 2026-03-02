@@ -21,6 +21,7 @@ async function login(req,res){
 
         return res.json({ message: "Login Success", accessToken,refreshToken }).status(200);
     }catch(err){
+        console.log(err);
         return res.status(401).json({error: err.message});
     }
 }

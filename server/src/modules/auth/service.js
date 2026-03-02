@@ -7,7 +7,7 @@ const authRepository = require('../auth/repository');
 async function login({email,password}){
     const user = await userService.getUserByEmail(email);
     if(!user) throw new Error('Invalid credentials');
-    const match = await bcrypt.compare(password, user.Password);
+    const match = await bcrypt.compare(password, user.password);
     if(!match) throw new Error('Invalid credentials');
 
     const accessSecret = process.env.JWT_SECRET;

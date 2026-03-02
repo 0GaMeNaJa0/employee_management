@@ -4,8 +4,8 @@ const bcrypt = require('bcrypt');
 
 async function queryUsers() {
   const sql =
-    "SELECT u.UserId, u.Email, u.`Name`, r.RoleId AS RoleId, r.Name AS RoleName, " +
-    "s.StatusId AS StatusId, s.Name AS StatusName " +
+    "SELECT u.UserId as userId, u.Email as email, u.`Name` as name, r.RoleId AS roleId, r.Name AS roleName, " +
+    "s.StatusId AS statusId, s.Name AS statusName " +
     "FROM Users u " +
     "LEFT JOIN Roles r ON u.RoleId = r.RoleId " +
     "LEFT JOIN Statuses s ON u.StatusId = s.StatusId";
@@ -16,8 +16,8 @@ async function queryUsers() {
 
 async function queryUser(userId) {
   const sql =
-    "SELECT u.UserId, u.Email, u.`Name`, r.RoleId AS RoleId, r.Name AS RoleName, " +
-    "s.StatusId AS StatusId, s.Name AS StatusName " +
+    "SELECT u.UserId as userId, u.Email as email, u.`Name` as name, r.RoleId AS roleId, r.Name AS roleName, " +
+    "s.StatusId AS statusId, s.Name AS statusName " +
     "FROM Users u " +
     "LEFT JOIN Roles r ON u.RoleId = r.RoleId " +
     "LEFT JOIN Statuses s ON u.StatusId = s.StatusId " +  
@@ -28,8 +28,8 @@ async function queryUser(userId) {
 }
 async function queryUserByEmail(email) {
   const sql =
-    "SELECT u.UserId, u.Password, u.Email, u.`Name`, r.RoleId AS RoleId, r.Name AS RoleName, " +
-    "s.StatusId AS StatusId, s.Name AS StatusName " +
+    "SELECT u.UserId as userId, u.Password as password, u.Email as email, u.`Name` as name, r.RoleId AS roleId, r.Name AS roleName, " +
+    "s.StatusId AS statusId, s.Name AS statusName " +
     "FROM Users u " +
     "LEFT JOIN Roles r ON u.RoleId = r.RoleId " +
     "LEFT JOIN Statuses s ON u.StatusId = s.StatusId " +  
