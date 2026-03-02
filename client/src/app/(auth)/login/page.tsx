@@ -8,8 +8,8 @@ export default function Login() {
 
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
-
-        const res = await fetch(`${process.env.NEXT_API_URL}/auth/login`, {
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -17,11 +17,12 @@ export default function Login() {
             body: JSON.stringify({ email, password }),
         });
 
-        
+        console.log(res.status);
         if(res.status === 200){
             const data = await res.json();
 
             const cookieStore = await cookies(); 
+        
         
         cookieStore.set('access_token', data.accessToken, {
             httpOnly: true,

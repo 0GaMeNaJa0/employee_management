@@ -11,7 +11,7 @@ export function proxy(request: NextRequest) {
   const publicPaths = ['/login', '/_next']
   if (publicPaths.some(p => pathname.startsWith(p))) return NextResponse.next()
 
-  if (!accessToken && !refreshToken) {
+  if (!accessToken || !refreshToken) {
     // not logged in -> redirect to login and preserve redirect back url
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('from', pathname)

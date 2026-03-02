@@ -2,13 +2,13 @@ export type Role   = "Admin" | "Developer" | "Designer" | "Manager" | "Analyst";
 export type Status = "Active" | "Idle" | "Inactive";
 
 export interface User {
-  id: number;
+  userId: number;
   name: string;
   email: string;
-  role: Role;
-  status: Status;
-  avatar: string;
-  color: string;
+  roleName: Role;
+  statusName: Status;
+  avatar : string,
+  color : string
 }
 
 export type ModalState =
@@ -17,4 +17,4 @@ export type ModalState =
   | { type: "delete"; user: User }
   | null;
 
-export type UserFormData = Pick<User, "name" | "email" | "role" | "status">;
+export type UserFormData = Pick<User, "name" | "email" | "roleName" | "statusName">;

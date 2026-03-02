@@ -1,7 +1,7 @@
 "use client"
-import { useState } from "react";
-import { Role,User,ModalState,UserFormData } from "@/features/users/types/type";
-import { INITIAL_USERS,ROLES,PAGE_SIZE,statusConfig,roleConfig } from "@/features/users/constants/constant";
+import { useEffect, useState } from "react";
+import { Role, User, ModalState, UserFormData } from "@/features/users/types/type";
+import { ROLES, PAGE_SIZE, statusConfig, roleConfig } from "@/features/users/constants/constant";
 import { DeleteConfirm } from "@/features/users/components/DeleteConfirm";
 import { Avatar } from "@/features/users/components/Avatar";
 import { UserForm } from "@/features/users/components/UserForm";
@@ -14,13 +14,21 @@ const getInitials = (name: string): string =>
   name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 const getColor = (name: string): string => {
-  const palette = [
-    "#6366f1","#0ea5e9","#f43f5e","#10b981","#f59e0b",
-    "#8b5cf6","#ec4899","#14b8a6","#ef4444","#84cc16","#06b6d4","#d946ef",
+  const colors = [
+    "#6366f1", "#0ea5e9", "#f43f5e", "#10b981", "#f59e0b",
+    "#8b5cf6", "#ec4899", "#14b8a6", "#ef4444", "#84cc16",
+    "#06b6d4", "#d946ef",
   ];
-  let h = 0;
-  for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h);
-  return palette[Math.abs(h) % palette.length];
+
+  let total = 0;
+
+  for (let i = 0; i < name.length; i++) {
+    total += name.charCodeAt(i);
+  }
+
+  const index = total % colors.length;
+
+  return colors[index];
 };
 
 
@@ -29,49 +37,90 @@ export default function Home() {
   const rawPage = params.get("page");
   const parsed = Number(rawPage);
   const pageFromUrl = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-  const [users, setUsers]   = useState<User[]>(INITIAL_USERS);
-  const [modal, setModal]   = useState<ModalState>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [modal, setModal] = useState<ModalState>(null);
   const [search, setSearch] = useState<string>("");
   const [filterRole, setFilterRole] = useState<Role | "All">("All");
 
-  const filtered = users.filter(
+  useEffect(() => {
+    async function fetchUsers() {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data: User[] = await res.json();
+
+      const usersWithAvatar = data.map((user) => {
+        const { avatar, color } = getAbbreviation(user.name);
+
+        return {
+          id:user.userId,
+          ...user,
+          avatar,
+          color,
+        };
+      });
+
+      setUsers(usersWithAvatar);
+    }
+
+    fetchUsers();
+  }, []);
+
+  const getAbbreviation = (name: string) => {
+    const splitName = name.split(" ");
+    const avatar = splitName[0].charAt(0) + splitName[1].charAt(0);
+
+    const color = getColor(name);
+
+    return {
+      avatar, color
+    }
+  }
+
+  const filtered = users?.filter(
     (u) =>
-      (filterRole === "All" || u.role === filterRole) &&
+      (filterRole === "All" || u.roleName === filterRole) &&
       (u.name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const pageUsers   = filtered.slice((pageFromUrl - 1) * PAGE_SIZE, pageFromUrl * PAGE_SIZE);
+  const pageUsers = filtered?.slice((pageFromUrl - 1) * PAGE_SIZE, pageFromUrl * PAGE_SIZE);
 
   const handleAdd = (form: UserFormData) => {
-    const newUser: User = {
-      id: Date.now(),
-      ...form,
-      avatar: getInitials(form.name),
-      color: getColor(form.name),
-    };
-    setUsers((prev) => [newUser, ...prev]);
+    // const newUser: User = {
+    //   id: Date.now(),
+    //   ...form,
+    //   avatar: getInitials(form.name),
+    //   color: getColor(form.name),
+    // };
+    // setUsers((prev) => [newUser, ...prev]);
     setModal(null);
 
   };
 
   const handleEdit = (form: UserFormData) => {
     if (modal?.type !== "edit") return;
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === modal.user.id
-          ? { ...u, ...form, avatar: getInitials(form.name), color: getColor(form.name) }
-          : u
-      )
-    );
+    // setUsers((prev) =>
+    //   prev.map((u) =>
+    //     u.id === modal.user.id
+    //       ? { ...u, ...form, avatar: getInitials(form.name), color: getColor(form.name) }
+    //       : u
+    //   )
+    // );
     setModal(null);
   };
 
   const handleDelete = () => {
     if (modal?.type !== "delete") return;
-    setUsers((prev) => prev.filter((u) => u.id !== modal.user.id));
+    // setUsers((prev) => prev.filter((u) => u.id !== modal.user.id));
     setModal(null);
   };
+
 
   return (
     <div className="min-h-screen bg-[#0a0c10] text-white p-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -119,12 +168,11 @@ export default function Home() {
             {(["All", ...ROLES] as const).map((r) => (
               <button
                 key={r}
-                onClick={() => { setFilterRole(r);  }}
-                className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  filterRole === r
-                    ? "bg-indigo-600 border-indigo-500 text-white"
-                    : "bg-white/5 border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20"
-                }`}
+                onClick={() => { setFilterRole(r); }}
+                className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${filterRole === r
+                  ? "bg-indigo-600 border-indigo-500 text-white"
+                  : "bg-white/5 border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20"
+                  }`}
               >
                 {r}
               </button>
@@ -148,10 +196,9 @@ export default function Home() {
           ) : (
             pageUsers.map((user, i) => (
               <div
-                key={user.id}
-                className={`grid grid-cols-12 items-center px-5 py-3.5 hover:bg-white/[0.025] transition-colors ${
-                  i < pageUsers.length - 1 ? "border-b border-white/5" : ""
-                }`}
+                key={user.userId}
+                className={`grid grid-cols-12 items-center px-5 py-3.5 hover:bg-white/[0.025] transition-colors ${i < pageUsers.length - 1 ? "border-b border-white/5" : ""
+                  }`}
               >
                 {/* User */}
                 <div className="col-span-5 flex items-center gap-3 min-w-0">
@@ -164,16 +211,16 @@ export default function Home() {
 
                 {/* Role */}
                 <div className="col-span-3">
-                  <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium ${roleConfig[user.role]}`}>
-                    {user.role}
+                  <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium ${roleConfig[user.roleName]}`}>
+                    {user.roleName}
                   </span>
                 </div>
 
                 {/* Status */}
                 <div className="col-span-2">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ring-1 ${statusConfig[user.status].badge}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[user.status].dot} ${user.status === "Active" ? "animate-pulse" : ""}`} />
-                    {user.status}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ring-1 ${statusConfig[user.statusName].badge}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[user.statusName].dot} ${user.statusName === "Active" ? "animate-pulse" : ""}`} />
+                    {user.statusName}
                   </span>
                 </div>
 
@@ -206,7 +253,7 @@ export default function Home() {
         </div>
 
         {/* Pagination */}
-        <Pagination dataSize={filtered.length} pageNo={pageFromUrl}/>
+        <Pagination dataSize={filtered.length} pageNo={pageFromUrl} />
       </div>
 
       {/* Modals */}
@@ -220,7 +267,7 @@ export default function Home() {
           <UserForm initial={modal.user} onSave={handleEdit} onCancel={() => setModal(null)} />
         </Modal>
       )}
-      
+
       {modal?.type === "delete" && (
         <Modal title="Remove User" onClose={() => setModal(null)}>
           <DeleteConfirm user={modal.user} onConfirm={handleDelete} onCancel={() => setModal(null)} />
