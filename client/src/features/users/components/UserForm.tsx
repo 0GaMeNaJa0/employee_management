@@ -1,22 +1,29 @@
-"use client"
+"use client";
 import { useState } from "react";
-import { Status,Role } from "../types/type";
-import { ROLES,STATUSES } from "../constants/constant";
-import { UserFormData } from "../types/type";
+import { Status, Role, User,UserFormData } from "../types/type";
 
 interface UserFormProps {
-  initial?: UserFormData;
+  initial?: User;
+  roleList: Role[];
+  statusList: Status[];
   onSave: (data: UserFormData) => void;
   onCancel: () => void;
 }
 
-export function UserForm({ initial, onSave, onCancel }: UserFormProps) {
-  const [form, setForm] = useState<UserFormData>(
-    initial ?? { name: "", email: "", role: "Developer", status: "Active" }
-  );
-
-  const set = <K extends keyof UserFormData>(key: K, value: UserFormData[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+export function UserForm({
+  initial,
+  roleList,
+  statusList,
+  onSave,
+  onCancel,
+}: UserFormProps) {
+  const [form, setForm] = useState<UserFormData>({
+    "userId" : initial?.userId ?? 1,
+    "email" : initial?.email ?? "",
+    "name" : initial?.name ?? "",
+    "roleId" : initial?.role.roleId ?? 1,
+    "statusId" : initial?.status.statusId ?? 1
+  });
 
   const isValid = form.name.trim() !== "" && form.email.trim() !== "";
 
@@ -30,12 +37,16 @@ export function UserForm({ initial, onSave, onCancel }: UserFormProps) {
       <div>
         <label className={labelClass}>Full Name</label>
         <input
+          type="text"
           className={inputClass}
           placeholder="e.g. Jane Smith"
           value={form.name}
-          onChange={(e) => set("name", e.target.value)}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, name: e.target.value }))
+          }
         />
       </div>
+
       <div>
         <label className={labelClass}>Email</label>
         <input
@@ -43,43 +54,63 @@ export function UserForm({ initial, onSave, onCancel }: UserFormProps) {
           type="email"
           placeholder="jane@company.io"
           value={form.email}
-          onChange={(e) => set("email", e.target.value)}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, email: e.target.value }))
+          }
         />
       </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Role</label>
           <select
             className={inputClass + " cursor-pointer"}
-            value={form.role}
-            onChange={(e) => set("role", e.target.value as Role)}
+            value={form.roleId}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, roleId: Number(e.target.value) }))
+            }
           >
-            {ROLES.map((r) => (
-              <option key={r} value={r} className="bg-[#111318]">{r}</option>
+            {roleList.map((r) => (
+              <option key={r.roleId} value={r.roleId} className="bg-[#111318]">
+                {r.name}
+              </option>
             ))}
           </select>
         </div>
+
         <div>
           <label className={labelClass}>Status</label>
           <select
             className={inputClass + " cursor-pointer"}
-            value={form.status}
-            onChange={(e) => set("status", e.target.value as Status)}
+            value={form.statusId}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, statusId: Number(e.target.value) }))
+            }
           >
-            {STATUSES.map((s) => (
-              <option key={s} value={s} className="bg-[#111318]">{s}</option>
+            {statusList.map((s) => (
+              <option
+                key={s.statusId}
+                value={s.statusId}
+                className="bg-[#111318]"
+              >
+                {s.name}
+              </option>
             ))}
           </select>
         </div>
       </div>
+
       <div className="flex gap-3 pt-2">
         <button
+          type="button"
           onClick={onCancel}
           className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
         >
           Cancel
         </button>
+
         <button
+          type="button"
           disabled={!isValid}
           onClick={() => isValid && onSave(form)}
           className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-medium transition-all"

@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
-import { Role, User, ModalState, UserFormData } from "@/features/users/types/type";
-import { ROLES, PAGE_SIZE, statusConfig, roleConfig } from "@/features/users/constants/constant";
+import { Role, User, ModalState, UserFormData,Status } from "@/features/users/types/type";
+import {  PAGE_SIZE,roleConfig,statusConfig } from "@/features/users/constants/constant";
 import { DeleteConfirm } from "@/features/users/components/DeleteConfirm";
 import { Avatar } from "@/features/users/components/Avatar";
 import { UserForm } from "@/features/users/components/UserForm";
@@ -38,9 +38,12 @@ export default function Home() {
   const parsed = Number(rawPage);
   const pageFromUrl = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
   const [modal, setModal] = useState<ModalState>(null);
   const [search, setSearch] = useState<string>("");
   const [filterRole, setFilterRole] = useState<Role | "All">("All");
+
 
   useEffect(() => {
     async function fetchUsers() {
@@ -52,23 +55,61 @@ export default function Home() {
         credentials: "include",
       });
 
-      const data: User[] = await res.json();
+      const data = await res.json();
 
-      const usersWithAvatar = data.map((user) => {
+      const usersWithAvatar = data.map((user : any) => {
         const { avatar, color } = getAbbreviation(user.name);
 
         return {
-          id:user.userId,
+          id: user.userId,
           ...user,
+          role : {
+            roleId : user.roleId,
+            name : user.roleName
+          },
+          status : {
+            statusId : user.statusId,
+            name : user.statusName
+          },
           avatar,
           color,
         };
       });
-
       setUsers(usersWithAvatar);
+
+    }
+
+    async function fetchRoles(){
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/roles`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data: Role[] = await res.json();
+
+      setRoles(data)
+    }
+
+    async function fetchStatuses(){
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/statuses`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data: Status[] = await res.json();
+
+      setStatuses(data)
     }
 
     fetchUsers();
+    fetchRoles();
+    fetchStatuses();
   }, []);
 
   const getAbbreviation = (name: string) => {
@@ -84,34 +125,51 @@ export default function Home() {
 
   const filtered = users?.filter(
     (u) =>
-      (filterRole === "All" || u.roleName === filterRole) &&
+      (filterRole === "All" || u.role === filterRole) &&
       (u.name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase()))
   );
 
   const pageUsers = filtered?.slice((pageFromUrl - 1) * PAGE_SIZE, pageFromUrl * PAGE_SIZE);
 
-  const handleAdd = (form: UserFormData) => {
-    // const newUser: User = {
-    //   id: Date.now(),
-    //   ...form,
-    //   avatar: getInitials(form.name),
-    //   color: getColor(form.name),
-    // };
-    // setUsers((prev) => [newUser, ...prev]);
+  const handleAdd = async (form: UserFormData) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email: form.email,
+        name: form.name,
+        roleId: form.roleId,
+        statusId: form.statusId
+      })
+    });
+
+    console.log(res);
     setModal(null);
 
   };
 
-  const handleEdit = (form: UserFormData) => {
+  const handleEdit = async (form: UserFormData) => {
     if (modal?.type !== "edit") return;
-    // setUsers((prev) =>
-    //   prev.map((u) =>
-    //     u.id === modal.user.id
-    //       ? { ...u, ...form, avatar: getInitials(form.name), color: getColor(form.name) }
-    //       : u
-    //   )
-    // );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        userId: form.userId,
+        email: form.email,
+        name: form.name,
+        roleId: form.roleId,
+        statusId: form.statusId
+      })
+    });
+
+    console.log(res);
     setModal(null);
   };
 
@@ -132,7 +190,7 @@ export default function Home() {
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Team Members</h1>
             <p className="text-zinc-500 text-sm mt-1">
-              {users.length} users across {ROLES.length} roles
+              {users.length} users across {roles.length} roles
             </p>
           </div>
           <button
@@ -165,16 +223,16 @@ export default function Home() {
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(["All", ...ROLES] as const).map((r) => (
+            {roles.map((r) => (
               <button
-                key={r}
+                key={r.roleId}
                 onClick={() => { setFilterRole(r); }}
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${filterRole === r
                   ? "bg-indigo-600 border-indigo-500 text-white"
                   : "bg-white/5 border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20"
                   }`}
               >
-                {r}
+                {r.name}
               </button>
             ))}
           </div>
@@ -211,16 +269,16 @@ export default function Home() {
 
                 {/* Role */}
                 <div className="col-span-3">
-                  <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium ${roleConfig[user.roleName]}`}>
-                    {user.roleName}
+                  <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium ${roleConfig[user.role.name]}`}>
+                    {user.role.name}
                   </span>
                 </div>
 
                 {/* Status */}
                 <div className="col-span-2">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ring-1 ${statusConfig[user.statusName].badge}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[user.statusName].dot} ${user.statusName === "Active" ? "animate-pulse" : ""}`} />
-                    {user.statusName}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ring-1  ${statusConfig[user.status.name].badge}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[user.status.name].dot} ${user.status.name === "Active" ? "animate-pulse" : ""}`} />
+                    {user.status.name}
                   </span>
                 </div>
 
@@ -259,18 +317,18 @@ export default function Home() {
       {/* Modals */}
       {modal?.type === "add" && (
         <Modal title="Add New User" onClose={() => setModal(null)}>
-          <UserForm onSave={handleAdd} onCancel={() => setModal(null)} />
+          <UserForm onSave={handleAdd} onCancel={() => setModal(null)} roleList={roles} statusList={statuses} />
         </Modal>
       )}
       {modal?.type === "edit" && (
         <Modal title="Edit User" onClose={() => setModal(null)}>
-          <UserForm initial={modal.user} onSave={handleEdit} onCancel={() => setModal(null)} />
+          <UserForm initial={modal.user} onSave={handleEdit} onCancel={() => setModal(null)}  roleList={roles} statusList={statuses}/>
         </Modal>
       )}
 
       {modal?.type === "delete" && (
         <Modal title="Remove User" onClose={() => setModal(null)}>
-          <DeleteConfirm user={modal.user} onConfirm={handleDelete} onCancel={() => setModal(null)} />
+          <DeleteConfirm user={modal.user} onConfirm={handleDelete} onCancel={() => setModal(null)}  />
         </Modal>
       )}
     </div>
