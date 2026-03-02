@@ -23,6 +23,7 @@ async function getUserByEmail(req, res, next) {
 async function createUser(req, res, next) {
   try {
     const userData = req.body;
+
     const result = await service.createUser(userData);
 
     if (result && result.insertId) {

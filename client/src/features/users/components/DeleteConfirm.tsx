@@ -2,7 +2,7 @@ import { User } from "../types/type";
 
 interface DeleteConfirmProps {
   user: User;
-  onConfirm: () => void;
+  onConfirm: (userId : number) => void;
   onCancel: () => void;
 }
 
@@ -27,7 +27,7 @@ export function DeleteConfirm({ user, onConfirm, onCancel }: DeleteConfirmProps)
           Cancel
         </button>
         <button
-          onClick={onConfirm}
+          onClick={() => onConfirm(user.userId)}
           className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium transition-all"
         >
           Remove

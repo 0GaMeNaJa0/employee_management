@@ -110,7 +110,7 @@ export default function Home() {
     fetchUsers();
     fetchRoles();
     fetchStatuses();
-  }, []);
+  }, [users]);
 
   const getAbbreviation = (name: string) => {
     const splitName = name.split(" ");
@@ -155,7 +155,7 @@ export default function Home() {
   const handleEdit = async (form: UserFormData) => {
     if (modal?.type !== "edit") return;
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -169,13 +169,21 @@ export default function Home() {
       })
     });
 
-    console.log(res);
     setModal(null);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async(userId : number) => {
     if (modal?.type !== "delete") return;
-    // setUsers((prev) => prev.filter((u) => u.id !== modal.user.id));
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        userId: userId
+      })
+    });
     setModal(null);
   };
 

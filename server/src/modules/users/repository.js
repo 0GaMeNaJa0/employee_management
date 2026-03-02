@@ -40,17 +40,16 @@ async function queryUserByEmail(email) {
 }
 
 async function insertUser(userData) {
-  const SALT_ROUNDS = 12;
   const user = userData instanceof User ? userData : new User(userData);
 
+  console.log(user);
   if (!user.email || !user.name) {
     throw new Error('Missing required fields: email and name are required.');
   }
 
-  const sql = `INSERT INTO Users (Email, \`Name\`, RoleId, StatusId, Password) VALUES (?, ?, ?, ?,?)`;
+  const sql = `INSERT INTO Users (email, \`name\`, roleId, statusId) VALUES (?, ?, ?, ?)`;
 
-  const hashPassword = await bcrypt.hash(user.password, SALT_ROUNDS );
-  const params = [user.email, user.name, user.roleId || null, user.statusId || null, hashPassword];
+  const params = [user.email, user.name, user.roleId || null, user.statusId || null];
 
   const [result] = await db.query(sql, params);
 
