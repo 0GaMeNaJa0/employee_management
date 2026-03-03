@@ -2,15 +2,18 @@ const db = require('../../config/db');
 const User = require('./model');
 const bcrypt = require('bcrypt');
 
-async function queryUsers() {
+async function queryUsers(page) {
+  const limit = 6;
+  const offset = 6 * Number(page - 1);
   const sql =
     "SELECT u.UserId as userId, u.Email as email, u.`Name` as name, r.RoleId AS roleId, r.Name AS roleName, " +
     "s.StatusId AS statusId, s.Name AS statusName " +
     "FROM Users u " +
     "LEFT JOIN Roles r ON u.RoleId = r.RoleId " +
-    "LEFT JOIN Statuses s ON u.StatusId = s.StatusId";
+    "LEFT JOIN Statuses s ON u.StatusId = s.StatusId " + 
+    "LIMIT ? OFFSET ?";
 
-  const [rows] = await db.query(sql);
+  const [rows] = await db.query(sql,[limit,offset]);
   return rows;
 }
 

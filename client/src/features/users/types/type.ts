@@ -30,3 +30,9 @@ export interface UserFormData {
   roleId: number;
   statusId: number;
 }
+
+export interface UserFilter{
+  roleId : number,
+  statusId : number,
+  
+}

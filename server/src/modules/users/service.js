@@ -1,7 +1,7 @@
 const repository = require('./repository');
 
-async function getUsers() {
-  return await repository.queryUsers();
+async function getUsers(page) {
+  return await repository.queryUsers(page);
 }
 
 async function getUser(userId) {

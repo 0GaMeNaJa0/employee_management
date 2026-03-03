@@ -2,7 +2,8 @@ const service = require('./service');
 
 async function getUsers(req, res, next) {
   try {
-    const users = await service.getUsers();
+    const page = req.query.page;
+    const users = await service.getUsers(page);
     res.json(users);
   } catch (err) { next(err); }
 }
